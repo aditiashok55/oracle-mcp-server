@@ -1,0 +1,12 @@
+[oracle_mcp_server]
+name = "oracle-mcp-server"
+version = "0.1.0"
+dependencies = [
+    "oracledb",
+    "python-dotenv",
+    "mcp"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
