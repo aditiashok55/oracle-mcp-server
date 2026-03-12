@@ -1,23 +1,20 @@
 import oracledb
-from dotenv import load_dotenv
-import os
 import json
 from config.settings import TABLE_WHITE_LIST
 
-# Load environment variables
-load_dotenv()
-connection_string = os.getenv("ORACLE_CONNECTION_STRING")
-connection = oracledb.connect(connection_string)
 
 def get_table_schema(connection: oracledb.Connection, table_name: str) -> str:
     """
     Retrieve the schema for a specified table.
     Returns column names and data types as a JSON string.
+    Table name is validated against the whitelist before execution.
     """
     try:
-        # Validate table name
         if table_name.upper() not in TABLE_WHITE_LIST:
-            return json.dumps({"error": f"Table {table_name} is not in the whitelist"})
+            return json.dumps({
+                "error": f"Table '{table_name}' is not permitted. "
+                         f"Allowed tables are: {', '.join(TABLE_WHITE_LIST)}."
+            })
 
         cursor = connection.cursor()
         cursor.execute(
@@ -26,6 +23,8 @@ def get_table_schema(connection: oracledb.Connection, table_name: str) -> str:
         )
         schema = [dict(zip(["column_name", "data_type"], row)) for row in cursor.fetchall()]
         cursor.close()
-        return json.dumps({"schema": schema})
+
+        return json.dumps({"table": table_name.upper(), "schema": schema})
+
     except oracledb.Error as e:
         return json.dumps({"error": str(e)})
